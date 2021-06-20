@@ -4,7 +4,9 @@ This repo contains odd bits and pieces as I'm trying to learn Nim. The code is p
 
 The `tutorial/` folder contains some bits and pieces that I've pulled from various tutorials and played with.
 
-The `maze-solver/` folder contains code for the [Tremaux Algorithm](), used to solve mazes. It's been ported from my previous JavaScript implementation just to start writing some Nim code. As a TODO, I'd like to use Nim's `js` build target to generate a file that draws the maze and its solution on a canvas.
+The `maze-solver/` folder contains code for [Trémaux's Algorithm](https://en.wikipedia.org/wiki/Maze-solving_algorithm#Tr%C3%A9maux's_algorithm), used to solve mazes. It's been ported from my previous JavaScript implementation just to start writing some Nim code.
+
+> TODO: I'd like to use Nim's `js` build target to generate a file that draws the maze and its solution on a canvas.
 
 ## Running the code
 
