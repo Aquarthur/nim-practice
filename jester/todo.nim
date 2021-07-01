@@ -1,36 +1,45 @@
 import jester
 import json
+import oids
 import options
-import sequtils, strutils
+import strutils
 
 proc health(): JsonNode =
   return parseJson("{ \"status\": \"OK\" }")
 
 type
   Todo = object
-    id: Option[int]
+    id: Option[string]
     description: string
     done: bool
 
-var todos = newSeq[Todo](0)
+var todos = %* {}
 
-proc createTodo(payload: JsonNode) =
-  var p = to(payload, Todo)
-  todos.add(Todo(id: some(todos.len()), description: p.description, done: p.done))
+proc createTodo(payload: JsonNode): Todo =
+  let p = to(payload, Todo)
+  let id = genOid()
+  let newTodo = Todo(id: some($id), description: p.description, done: p.done)
+  todos[$id] = %newTodo
+  return newTodo
 
-proc patchTodo(i: int, payload: JsonNode) =
-  var todo = todos[i]
-  if payload.hasKey("description"):
-    todo.description = payload["description"].getStr()
-  if payload.hasKey("done"):
-    todo.done = payload["done"].getBool()
-  todos[i] = todo
+proc patchTodo(id: string, payload: JsonNode): Option[Todo] =
+  if todos.hasKey(id):
+    var todo = to(todos[id], Todo)
+    if payload.hasKey("description"):
+      todo.description = payload["description"].getStr()
+    if payload.hasKey("done"):
+      todo.done = payload["done"].getBool()
+    todos[id] = %* todo
+    return some(todo)
 
-proc findTodo(id: int): int =
-  for todo in todos:
-    if todo.id.isSome and (todo.id.get() == id):
-      return id
-  return -1
+proc findTodo(id: string): Option[Todo] =
+  if todos.hasKey(id):
+    return some(to(todos[id], Todo))
+
+proc deleteTodo(id: string): Option[string] =
+  if todos.hasKey(id):
+    todos.delete(id)
+    return some(id)
 
 routes:
   get "/health":
@@ -40,34 +49,31 @@ routes:
     resp Http200, @"msg"
 
   post "/todos":
-    createTodo(parseJson(request.body()))
-    resp %todos[todos.len() - 1]
+    echo parseJson(request.body())
+    let todo: Todo = createTodo(parseJson(request.body()))
+    resp todos[todo.id.get()]
 
   get "/todos":
     resp %todos
 
   get "/todos/@id":
-    let i: int = findTodo(parseInt(@"id"))
-    if i >= 0:
-      resp %todos[parseInt(@"id")]
+    let todo: Option[Todo] = findTodo(@"id")
+    if todo.isSome:
+      resp %todos[@"id"]
     resp Http404
 
   patch "/todos/@id":
-    let id = parseInt(@"id")
-    if id < 0 or id >= todos.len():
-      raise(newException(ValueError, "ID out of bounds"))
-    patchTodo(id, parseJson(request.body()))
-    resp %todos[id]
+    let todo = patchTodo(@"id", parseJson(request.body()))
+    if todo.isSome:
+      resp %todos[@"id"]
+    resp Http404
 
   delete "/todos/@id":
-    let id = parseInt(@"id")
-    if id < 0 or id >= todos.len():
-      raise(newException(ValueError, "ID out of bounds"))
-    todos = filter(todos, proc(t: Todo): bool = (t.id.isSome and (t.id.get() != id)))
-    resp Http204
+    let deleted = deleteTodo(@"id")
+    if deleted.isSome:
+      resp Http204
+    resp Http404
 
   error Http404:
-    resp "Page not found!"
-
-  error Exception:
-    resp exception.msg
+    let errJson = %* { "status": "error", "msg": "Page not found!" }
+    resp errJson
