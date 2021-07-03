@@ -8,11 +8,15 @@ The `maze-solver/` folder contains code for [Trémaux's Algorithm](https://en.wi
 
 > TODO: I'd like to use Nim's `js` build target to generate a file that draws the maze and its solution on a canvas.
 
-The `jester/` folder contains a super basic CRUD API (currently, all in memory) written using, you guessed it, [jester](https://github.com/dom96/jester). Also includes my thoughts on the framework.
-
-> TODO: Use [norm](https://github.com/moigagoo/norm) to make it a "proper" CRUD API.
+The `jester/` folder contains a super basic CRUD API (currently, all in memory) written using, you guessed it, [jester](https://github.com/dom96/jester), as well as [norm](https://github.com/moigagoo/norm). Also includes my thoughts on the framework.
 
 ## Running the code
+
+Differents bit of code use different libraries, including:
+* `jester`
+* `norm`
+
+Just run `nimble install [pkg]` for the packages you may need.
 
 For all of the `.nim` files you see, just run:
 
