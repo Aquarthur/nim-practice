@@ -3,6 +3,7 @@ fib
 server
 todo
 tremaux
+perceptron
 
 maze-solver/index.html
 maze-solver/maze.json
